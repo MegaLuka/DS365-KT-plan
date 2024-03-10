@@ -4,7 +4,21 @@ terraform {
       source  = "hashicorp/aws"
       version = "~> 5.0"
     }
+    newrelic = {
+      source  = "newrelic/newrelic"
+    }
   }
+}
+
+provider "newrelic" {
+  account_id = 4381362   # Your New Relic account ID
+  api_key = "NRAK-K2O********" # Your New Relic user key
+  region = "US"        # US or EU (defaults to US)
+}
+
+# New relic policy
+resource "newrelic_alert_policy" "golden_signal_policy" {
+  name = "Golden Signals"
 }
 
 module "instance_parameters" {
@@ -128,7 +142,7 @@ resource "aws_eip" "my_eip" {
   depends_on                = [aws_internet_gateway.my_internet_gateway]
 }
 
-
+# ALARM COMPONENTS
 resource "aws_cloudwatch_metric_alarm" "alarm" {
   alarm_name                = "ec2-cpu-alarm"
   comparison_operator       = "GreaterThanOrEqualToThreshold"
@@ -142,3 +156,14 @@ resource "aws_cloudwatch_metric_alarm" "alarm" {
   insufficient_data_actions = []
 }
 
+#postgresql DB
+resource "aws_db_instance" "postgresql" {
+  allocated_storage    = 10
+  db_name              = "mypostgresqldb"
+  engine               = "postgresql"
+  engine_version       = "5.7"
+  instance_class       = "db.t3.micro"
+  username             = "postgres"
+  password             = "root"
+  skip_final_snapshot  = true
+}
